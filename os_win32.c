@@ -123,6 +123,11 @@ fn u64 os_getPageSize()
 	return sysinfo.dwPageSize;
 }
 
+fn void os_sleep(s32 ms)
+{
+	Sleep(ms);
+}
+
 fn Str8 os_getAppDir(Arena *arena)
 {
 	char buffer[256];
@@ -145,12 +150,16 @@ fn Str8 os_getAppDir(Arena *arena)
 
 fn u64 os_getPerfCounter()
 {
-	NOT_IMPLEMENTED();
+	LARGE_INTEGER counter;
+	QueryPerformanceCounter(&counter);
+	return (u64)counter.QuadPart;
 }
 
 fn u64 os_getPerfFreq()
 {
-	NOT_IMPLEMENTED();
+	LARGE_INTEGER frequency;
+	QueryPerformanceFrequency(&frequency);
+	return (u64)frequency.QuadPart;
 }
 
 typedef struct OS_Window OS_Window;

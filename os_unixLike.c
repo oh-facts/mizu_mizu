@@ -33,6 +33,14 @@ fn u64 os_getPageSize()
 	return getpagesize();
 }
 
+fn void os_sleep(s32 ms)
+{
+	struct timespec ts;
+	ts.tv_sec = ms / 1000;
+	ts.tv_nsec = (ms % 1000) * 1000000;
+	nanosleep(&ts, 0);
+}
+
 // NOTE(mizu): idk if this will work on mac. If not, move this to linux and write mac stuff
 fn Str8 os_getAppDir(Arena *arena)
 {
@@ -54,14 +62,14 @@ fn Str8 os_getAppDir(Arena *arena)
 	return out;
 }
 
-fn u64 os_getPerfCounter()
+fn u64 os_getPerfCounter() 
 {
-	NOT_IMPLEMENTED();
-	return 0;
+	struct timespec ts;
+	clock_gettime(CLOCK_MONOTONIC, &ts);
+	return ts.tv_sec * 1000000000ull + ts.tv_nsec;
 }
 
-fn u64 os_getPerfFreq()
+fn u64 os_getPerfFreq() 
 {
-	NOT_IMPLEMENTED();
-	return 0;
+	return 1000000000ull;
 }

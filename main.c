@@ -10,14 +10,34 @@ int main(int argc, char *argv[])
 	//Arena *arena = arenaAlloc();
 	Arena *frame = arenaAlloc();
 	
+	u64 start = os_getPerfCounter();
+	u64 freq = os_getPerfFreq();
+	
+	f64 time_elapsed = 0;
+	f64 delta = 0;
+	
 	b32 run = 1;
 	for(;run;)
 	{
+		f64 time_since_last = time_elapsed;
 		ArenaTemp temp = arenaTempBegin(frame);
 		
 		run = !os_keyTest(temp.arena);
 		
 		arenaTempEnd(&temp);
+		
+		u64 end = os_getPerfCounter();
+		time_elapsed = (end - start) / freq;
+		delta = time_elapsed - time_since_last;
+		
+		// poor man's vsync ------------------------------------------
+		f64 time_left = (1 / 60.f) - delta;
+		if (time_left > 0) 
+		{
+			os_sleep(time_left * 1000);
+		}
+		// -----------------------------------------------------------
+		
 	}
 	printf("quit\n");
 }

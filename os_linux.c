@@ -1,4 +1,3 @@
-#undef function
 #include <sys/mman.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -8,8 +7,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <X11/keysym.h>
-
-#define function static
+#include <time.h>
 
 read_only OS_Key key_table[] = 
 {
