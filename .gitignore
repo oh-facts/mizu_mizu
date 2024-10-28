@@ -1,0 +1,31 @@
+// output
+.out/
+out/
+release/
+releases/
+build/
+builds/
+
+//editor
+project.4coder
+.vs
+.vscode
+.cache
+*.swp
+
+// compiler artifacts
+*.pdb
+*.exp
+*.obj
+*.exe
+yk
+*.lib
+
+// debugger artifacts
+*.rdi
+
+// misc
+temp/
+art.txt
+scratch.c
+*.zip
