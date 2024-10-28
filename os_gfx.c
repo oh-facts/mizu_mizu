@@ -1,7 +1,7 @@
 // TODO(mizu): organize
 #define OS_MAX_WIN 10
-global u64 total_cmt;
-global u64 total_res;
+pub u64 total_cmt;
+pub u64 total_res;
 typedef struct OS_Handle OS_Handle;
 struct OS_Handle
 {
@@ -76,12 +76,12 @@ struct OS_EventList
 };
 
 // implemented per OS ------------------
-function void os_innit();
-function OS_EventList os_pollEvents(Arena *arena);
-function OS_Handle os_openWindow(char * title, f32 x, f32 y, f32 w, f32 h);
+fn void os_innit();
+fn OS_EventList os_pollEvents(Arena *arena);
+fn OS_Handle os_openWindow(char * title, f32 x, f32 y, f32 w, f32 h);
 // =====================================
 
-function OS_Event *os_pushEvent(Arena *arena, OS_EventList *list)
+fn OS_Event *os_pushEvent(Arena *arena, OS_EventList *list)
 {
 	list->count++;
 	
@@ -100,7 +100,7 @@ function OS_Event *os_pushEvent(Arena *arena, OS_EventList *list)
 	return out;
 }
 
-function OS_Event *os_eatEvent(OS_EventList *list, OS_Event *event)
+fn OS_Event *os_eatEvent(OS_EventList *list, OS_Event *event)
 {
 	list->count--;
 	
@@ -125,7 +125,7 @@ function OS_Event *os_eatEvent(OS_EventList *list, OS_Event *event)
 	return event;
 }
 
-function OS_Event *os_event(OS_EventList *list, OS_Key key, OS_EventKind kind)
+fn OS_Event *os_event(OS_EventList *list, OS_Key key, OS_EventKind kind)
 {
 	OS_Event *out = 0;
 	for(OS_Event *cur = list->first; cur; cur = cur->next)
@@ -223,7 +223,7 @@ read_only char *event_names[] =
 };
 
 // returns true if close is requested
-function b32 os_keyTest(Arena *arena)
+fn b32 os_keyTest(Arena *arena)
 {
 	OS_EventList list = os_pollEvents(arena);
 	

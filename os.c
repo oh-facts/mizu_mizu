@@ -1,10 +1,10 @@
-function void *os_reserve(u64 size);
-function b32 os_commit(void *ptr, u64 size);
-function void os_decommit(void *ptr, u64 size);
-function void os_free(void *ptr, u64 size);
-function u64 os_getPageSize();
+fn void *os_reserve(u64 size);
+fn b32 os_commit(void *ptr, u64 size);
+fn void os_decommit(void *ptr, u64 size);
+fn void os_free(void *ptr, u64 size);
+fn u64 os_getPageSize();
 
 struct Arena;
-function struct Str8 os_getAppDir(struct Arena *arena);
-function u64 os_getPerfCounter();
-function u64 os_getPerfFreq();
+fn struct Str8 os_getAppDir(struct Arena *arena);
+fn u64 os_getPerfCounter();
+fn u64 os_getPerfFreq();

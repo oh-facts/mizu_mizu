@@ -79,9 +79,10 @@ typedef int32_t b32;
 
 #define DeferLoop(begin, end) for(int _i_ = ((begin), 0); !_i_; _i_ += 1, (end))
 
-#define function static
-#define global static
-#define local_persist static
+#define fn static
+#define pub static
+
+#define priv_persist static
 #define read_only static const
 
 #if defined OS_WIN32

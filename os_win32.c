@@ -84,7 +84,7 @@ read_only OS_Key key_table[] =
 	[VK_SPACE] = OS_Key_SPACE,
 };
 
-function void *os_reserve(u64 size)
+fn void *os_reserve(u64 size)
 {
 	void *out = VirtualAlloc(0, size, MEM_RESERVE, PAGE_READWRITE);
 	if (out != NULL)
@@ -94,7 +94,7 @@ function void *os_reserve(u64 size)
 	return out;
 }
 
-function b32 os_commit(void *ptr, u64 size)
+fn b32 os_commit(void *ptr, u64 size)
 {
 	if (VirtualAlloc(ptr, size, MEM_COMMIT, PAGE_READWRITE) == NULL)
 	{
@@ -106,24 +106,24 @@ function b32 os_commit(void *ptr, u64 size)
 	return 1;
 }
 
-function void os_decommit(void *ptr, u64 size)
+fn void os_decommit(void *ptr, u64 size)
 {
 	VirtualFree(ptr, size, MEM_DECOMMIT);
 }
 
-function void os_free(void *ptr, u64 size)
+fn void os_free(void *ptr, u64 size)
 {
 	VirtualFree(ptr, 0, MEM_RELEASE);
 }
 
-function u64 os_getPageSize()
+fn u64 os_getPageSize()
 {
 	SYSTEM_INFO sysinfo = {0};
 	GetSystemInfo(&sysinfo);
 	return sysinfo.dwPageSize;
 }
 
-function Str8 os_getAppDir(Arena *arena)
+fn Str8 os_getAppDir(Arena *arena)
 {
 	char buffer[256];
 	DWORD len = GetModuleFileName(0, buffer, 256);
@@ -143,12 +143,12 @@ function Str8 os_getAppDir(Arena *arena)
 	return out;
 }
 
-function u64 os_getPerfCounter()
+fn u64 os_getPerfCounter()
 {
 	NOT_IMPLEMENTED();
 }
 
-function u64 os_getPerfFreq()
+fn u64 os_getPerfFreq()
 {
 	NOT_IMPLEMENTED();
 }
@@ -168,11 +168,11 @@ struct OS_State
 	s32 num;
 };
 
-global OS_State *os_state;
-global OS_EventList event_list;
-global Arena *event_arena;
+pub OS_State *os_state;
+pub OS_EventList event_list;
+pub Arena *event_arena;
 
-function void os_innit()
+fn void os_innit()
 {
 	Arena *arena = arenaAlloc();
 	os_state = push_struct(arena, OS_State);
@@ -181,7 +181,7 @@ function void os_innit()
 	SetProcessDPIAware();
 }
 
-function OS_EventList os_pollEvents(Arena *arena)
+fn OS_EventList os_pollEvents(Arena *arena)
 {
 	event_arena = arena;
 	event_list = (OS_EventList){0};
@@ -196,7 +196,7 @@ function OS_EventList os_pollEvents(Arena *arena)
 	return event_list;
 }
 
-function OS_Window *os_windowFromHWND(HWND hwnd)
+fn OS_Window *os_windowFromHWND(HWND hwnd)
 {
 	OS_Window *out = 0;
 	for(s32 i = 0; i < os_state->num; i++)
@@ -211,12 +211,12 @@ function OS_Window *os_windowFromHWND(HWND hwnd)
 	return out;
 }
 
-function OS_Window *os_windowFromHandle(OS_Handle handle)
+fn OS_Window *os_windowFromHandle(OS_Handle handle)
 {
 	return (OS_Window*)handle.u64[0];
 }
 
-function LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+fn LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
 	OS_Window *win = os_windowFromHWND(hwnd);
 	
@@ -472,7 +472,7 @@ function LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPa
 	return DefWindowProc(hwnd, msg, wParam, lParam);
 }
 
-function OS_Handle os_openWindow(char *title, f32 x, f32 y, f32 w, f32 h)
+fn OS_Handle os_openWindow(char *title, f32 x, f32 y, f32 w, f32 h)
 {
 	OS_Window *win = &os_state->win[os_state->num++];
 	WNDCLASSA wc = {0};

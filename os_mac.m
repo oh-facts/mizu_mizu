@@ -90,9 +90,9 @@ struct OS_State
 	s32 num;
 };
 
-global OS_State *os_state;
-global OS_EventList event_list;
-global Arena *event_arena;
+pub OS_State *os_state;
+pub OS_EventList event_list;
+pub Arena *event_arena;
 
 @interface windowDelegate: NSObject <NSWindowDelegate>;
 @end
@@ -105,14 +105,14 @@ global Arena *event_arena;
 }
 @end
 
-function void os_innit()
+fn void os_innit()
 {
 	Arena *arena = arenaAlloc();
 	os_state = push_struct(arena, OS_State);
 	os_state->arena = arena;
 }
 
-function OS_EventList os_pollEvents(Arena *arena)
+fn OS_EventList os_pollEvents(Arena *arena)
 {
 	event_arena = arena;
 	event_list = (OS_EventList){0};
@@ -201,7 +201,7 @@ function OS_EventList os_pollEvents(Arena *arena)
 	return event_list;
 }
 
-function OS_Handle os_openWindow(char * title, f32 x, f32 y, f32 w, f32 h)
+fn OS_Handle os_openWindow(char * title, f32 x, f32 y, f32 w, f32 h)
 {
 	OS_Window *win = os_state->win + os_state->num++;
 	

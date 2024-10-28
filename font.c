@@ -15,13 +15,13 @@ struct Atlas
 	Glyph glyphs[256];
 };
 
-function Glyph *glyphFromCodepoint(Atlas *aminas, char c)
+fn Glyph *glyphFromCodepoint(Atlas *aminas, char c)
 {
 	Glyph *out = aminas->glyphs + (u32)c;
 	return out;
 }
 
-function Glyph *make_bmp_font(u8* path, char *codepoints, u32 num_cp, Arena* arena)
+fn Glyph *make_bmp_font(u8* path, char *codepoints, u32 num_cp, Arena* arena)
 {
 	u8 *file_data = read_file(arena, (char*)path, FILE_TYPE_BINARY).bytes;
 	

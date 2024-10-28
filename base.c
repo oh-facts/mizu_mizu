@@ -3,7 +3,7 @@
 #define IS_FLAG_SET(flags, flagToCheck) ((flags) & (flagToCheck))
 #define TOGGLE_FLAG(flags, flagToToggle) ((flags) ^= (flagToToggle))
 
-function b32 is_pow_of_2(size_t addr)
+fn b32 is_pow_of_2(size_t addr)
 {
 	return (addr & (addr-1)) == 0;
 }
@@ -39,7 +39,7 @@ struct ArenaTemp
 #define push_struct(arena, type) (type*)_arenaPushImpl(arena, sizeof(type))
 #define push_array(arena,type,count) (type*)_arenaPushImpl(arena, sizeof(type) * count)
 
-function void* _arenaPushImpl(Arena* arena, size_t size)
+fn void* _arenaPushImpl(Arena* arena, size_t size)
 {
 	u64 pos_mem = AlignPow2(arena->used, arena->align);
 	u64 pos_new = pos_mem + size;
@@ -72,7 +72,7 @@ function void* _arenaPushImpl(Arena* arena, size_t size)
 	return memory;
 }
 
-function ArenaTemp arenaTempBegin(Arena *arena)
+fn ArenaTemp arenaTempBegin(Arena *arena)
 {
 	ArenaTemp out = {
 		.arena = arena,
@@ -82,14 +82,14 @@ function ArenaTemp arenaTempBegin(Arena *arena)
 }
 
 // TODO(mizu): Can be very expensive
-function void arenaTempEnd(ArenaTemp *temp)
+fn void arenaTempEnd(ArenaTemp *temp)
 {
 	memset((u8*)temp->arena + temp->pos, 0, temp->arena->used - temp->pos);
 	
 	temp->arena->used = temp->pos;
 }
 
-function Arena *arenaAllocSized(u64 cmt, u64 res)
+fn Arena *arenaAllocSized(u64 cmt, u64 res)
 {
 	Arena *arena = 0;
 	
@@ -106,7 +106,7 @@ function Arena *arenaAllocSized(u64 cmt, u64 res)
 	return arena;
 }
 
-function Arena *arenaAlloc()
+fn Arena *arenaAlloc()
 {
 	return arenaAllocSized(ARENA_COMMIT_SIZE, ARENA_RESERVE_SIZE);
 }
@@ -122,7 +122,7 @@ struct Str8
 
 #define str8_lit(c) Str8{(u8*)c, sizeof(c) - 1}
 
-function u64 cstr8Len(char *c)
+fn u64 cstr8Len(char *c)
 {
 	u64 out = 0;
 	while(*c++)
@@ -132,7 +132,7 @@ function u64 cstr8Len(char *c)
 	return out;
 }
 
-function Str8 str8(u8 *c, u64 len)
+fn Str8 str8(u8 *c, u64 len)
 {
 	Str8 out = 
 	{
@@ -141,7 +141,7 @@ function Str8 str8(u8 *c, u64 len)
 	return out;
 }
 
-function void str8_cpy(Str8 *dst, Str8 *src)
+fn void str8_cpy(Str8 *dst, Str8 *src)
 {
 	for(u32 i = 0; i < src->len; i ++)
 	{
@@ -149,7 +149,7 @@ function void str8_cpy(Str8 *dst, Str8 *src)
 	}
 }
 
-function Str8 push_str8fv(Arena *arena, char *fmt, va_list args)
+fn Str8 push_str8fv(Arena *arena, char *fmt, va_list args)
 {
 	Str8 out = {0};
 	va_list args_copy;
@@ -165,7 +165,7 @@ function Str8 push_str8fv(Arena *arena, char *fmt, va_list args)
 	return out;
 }
 
-function Str8 push_str8f(Arena *arena, char *fmt, ...)
+fn Str8 push_str8f(Arena *arena, char *fmt, ...)
 {
 	va_list args;
 	va_start(args, fmt);
@@ -174,7 +174,7 @@ function Str8 push_str8f(Arena *arena, char *fmt, ...)
 	return(result);
 }
 
-function b32 str8_equals(Str8 a, Str8 b)
+fn b32 str8_equals(Str8 a, Str8 b)
 {
 	b32 res = 1;
 	
@@ -197,7 +197,7 @@ function b32 str8_equals(Str8 a, Str8 b)
 	return res;
 }
 
-function Str8 str8_join(Arena *arena, Str8 a, Str8 b)
+fn Str8 str8_join(Arena *arena, Str8 a, Str8 b)
 {
 	Str8 out = {0};
 	out.c = push_array(arena, u8, a.len + b.len);
@@ -267,7 +267,7 @@ struct TCXT
 	debug_cycle_counter counters_last[DEBUG_CYCLE_COUNTER_COUNT];
 };
 
-global TCXT *tcxt;
+pub TCXT *tcxt;
 
 #if defined (OS_WIN32) || defined(OS_LINUX)
 #define BEGIN_TIMED_BLOCK(ID) u64 start_cycle_count_##ID = __rdtsc(); ++tcxt->counters[DEBUG_CYCLE_COUNTER_##ID].hit_count
@@ -278,7 +278,7 @@ global TCXT *tcxt;
 #define END_TIMED_BLOCK(ID)
 #endif
 
-function void tcxt_init()
+fn void tcxt_init()
 {
 	Arena *arena = arenaAlloc();
 	tcxt = push_struct(arena, TCXT);
@@ -289,7 +289,7 @@ function void tcxt_init()
 	}
 }
 
-function void tcxt_process_debug_counters()
+fn void tcxt_process_debug_counters()
 {
 	for(u32 i = 0; i < ARRAY_LEN(tcxt->counters); i ++)
 	{
@@ -305,7 +305,7 @@ function void tcxt_process_debug_counters()
 	}
 }
 
-function void tcxt_print_debug_counters()
+fn void tcxt_print_debug_counters()
 {
 	for(u32 i = 0; i < ARRAY_LEN(tcxt->counters); i ++)
 	{
@@ -315,7 +315,7 @@ function void tcxt_print_debug_counters()
 	}
 }
 
-function Arena *tcxt_get_scratch(Arena **conflicts, u64 count)
+fn Arena *tcxt_get_scratch(Arena **conflicts, u64 count)
 {
 	Arena *out = 0;
 	for(u32 i = 0; i < ARRAY_LEN(tcxt->arenas); i ++)
@@ -373,7 +373,7 @@ struct FileData
 #define _sleep(len) sleep(len)
 #endif
 
-function FileData read_file(Arena *arena, const char *filepath, FILE_TYPE type)
+fn FileData read_file(Arena *arena, const char *filepath, FILE_TYPE type)
 {
 	FileData out = {0};
 	FILE *file;
@@ -401,7 +401,7 @@ function FileData read_file(Arena *arena, const char *filepath, FILE_TYPE type)
 	return out;
 }
 
-function void write_file(const char *filepath, FILE_TYPE type, void *data, size_t size)
+fn void write_file(const char *filepath, FILE_TYPE type, void *data, size_t size)
 {
 	FILE *file;
 	
@@ -419,7 +419,7 @@ function void write_file(const char *filepath, FILE_TYPE type, void *data, size_
 	
 }
 
-function b32 clone_file(const char* sourcePath, const char* destinationPath)
+fn b32 clone_file(const char* sourcePath, const char* destinationPath)
 {
 	b32 out = 0;
 	
@@ -450,7 +450,7 @@ function b32 clone_file(const char* sourcePath, const char* destinationPath)
 	return out;
 }
 
-function Bitmap bitmap(Str8 path)
+fn Bitmap bitmap(Str8 path)
 {
 	Bitmap out = {0};
 	
@@ -461,7 +461,7 @@ function Bitmap bitmap(Str8 path)
 	return out;
 }
 
-function Str8 file_name_from_path(Arena *arena, Str8 path)
+fn Str8 file_name_from_path(Arena *arena, Str8 path)
 {
 	char *cur = (char*)&path.c[path.len - 1];
 	u32 count = 0;
