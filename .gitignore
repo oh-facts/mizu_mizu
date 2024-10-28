@@ -23,6 +23,7 @@ yk
 
 // debugger artifacts
 *.rdi
+yk.dSYM/
 
 // misc
 temp/
