@@ -103,6 +103,7 @@ global Arena *event_arena;
 	OS_Event *os_event = os_pushEvent(event_arena, &event_list);
 	os_event->kind = OS_EventKind_CloseRequested;
 }
+@end
 
 function void os_innit()
 {
