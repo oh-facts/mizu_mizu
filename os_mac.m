@@ -1,6 +1,7 @@
 #undef function
 #include <Cocoa/Cocoa.h>
 #include <Foundation/Foundation.h>
+#include <Carbon/Carbon.h>
 #define function static
 
 read_only OS_Key key_table[] = 
