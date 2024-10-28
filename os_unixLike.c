@@ -23,7 +23,7 @@ function void os_decommit(void *ptr, u64 size)
 	mprotect(ptr, size, PROT_NONE);
 }
 
-function void os_release(void *ptr, u64 size)
+function void os_free(void *ptr, u64 size)
 {
 	munmap(ptr, size);
 }

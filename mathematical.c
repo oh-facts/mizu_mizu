@@ -20,16 +20,16 @@ union v2s
 	};
 };
 
-typedef struct Rect Rect;
-struct Rect
+typedef struct RectF32 RectF32;
+struct RectF32
 {
 	v2f min;
 	v2f max;
 };
 
-function Rect rect(f32 min_x, f32 min_y, f32 max_x, f32 max_y)
+function RectF32 rectF32(f32 min_x, f32 min_y, f32 max_x, f32 max_y)
 {
-	Rect out = {0};
+	RectF32 out = {0};
 	
 	out.min.x = min_x;
 	out.min.y = min_y;
@@ -46,9 +46,9 @@ function Rect rect(f32 min_x, f32 min_y, f32 max_x, f32 max_y)
 
 #define v4f_varg(v) (v).x, (v).y, (v).z, (v).w
 
-function Rect rectFromDim(v2f pos, v2f scale)
+function RectF32 rectF32FromDim(v2f pos, v2f scale)
 {
-	Rect out = {0};
+	RectF32 out = {0};
 	out.min.x = pos.x;
 	out.min.y = pos.y;
 	
@@ -58,7 +58,7 @@ function Rect rectFromDim(v2f pos, v2f scale)
 	return out;
 }
 
-function v2f sizeFromRect(Rect rect)
+function v2f sizeFromRectF32(RectF32 rect)
 {
 	v2f out = {0};
 	out.x = rect.max.x - rect.min.x;
@@ -67,7 +67,7 @@ function v2f sizeFromRect(Rect rect)
 	return out;
 }
 
-function v2f centerFromRect(Rect rect)
+function v2f centerFromRect(RectF32 rect)
 {
 	v2f out = {0};
 	

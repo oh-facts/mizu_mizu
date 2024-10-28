@@ -111,7 +111,7 @@ function void os_decommit(void *ptr, u64 size)
 	VirtualFree(ptr, size, MEM_DECOMMIT);
 }
 
-function void os_release(void *ptr, u64 size)
+function void os_free(void *ptr, u64 size)
 {
 	VirtualFree(ptr, 0, MEM_RELEASE);
 }

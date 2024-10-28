@@ -24,7 +24,7 @@ if [ "$(uname)" == "Linux" ]; then
     gfx_lib="-lX11"
 elif [ "$(uname)" == "Darwin" ]; then
     echo [Darwin]    
-				gfx_lib="-framework Cocoa -framework AppKit"
+				gfx_lib="-framework Cocoa -framework AppKit -framework Foundation"
 else
     echo "Unsupported OS: $(uname)"
     exit 1
