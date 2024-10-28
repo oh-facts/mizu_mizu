@@ -67,7 +67,7 @@ read_only OS_Key key_table[] =
 	[kVK_LeftArrow] = OS_Key_LEFT,
 	[kVK_RightArrow] = OS_Key_RIGHT,
 	[kVK_UpArrow] = OS_Key_UP,
-	[kVK_DOwnArrow] = OS_Key_DOWN,
+	[kVK_DownArrow] = OS_Key_DOWN,
 	
 	[kVK_Tab] = OS_Key_TAB,
 	[kVK_CapsLock] = OS_Key_CAPS,
@@ -119,7 +119,7 @@ function OS_EventList os_pollEvents(Arena *arena)
 	NSEvent *event;
 	do {
 		event = [NSApp nextEventMatchingMask: NSEventMaskAny
-											untilData: nil
+											untilDate: nil
 											inMode: NSDefaultRunLoopMode
 											dequeue: YES];
 		
