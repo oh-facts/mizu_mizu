@@ -82,7 +82,7 @@ typedef int32_t b32;
 #define fn static
 #define pub static
 
-#define priv_persist static
+#define local_persist static
 #define read_only static const
 
 #if defined OS_WIN32

@@ -30,13 +30,13 @@ int main(int argc, char *argv[])
 		time_elapsed = (end - start) / freq;
 		delta = time_elapsed - time_since_last;
 		
-		// poor man's vsync ------------------------------------------
+		// poor man's vsync--------------------------------
 		f64 time_left = (1 / 60.f) - delta;
 		if (time_left > 0) 
 		{
 			os_sleep(time_left * 1000);
 		}
-		// -----------------------------------------------------------
+		// -------------------------------------------------
 		
 	}
 	printf("quit\n");
