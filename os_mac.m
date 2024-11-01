@@ -76,21 +76,6 @@ read_only OS_Key key_table[] =
 	[kVK_Space] = OS_Key_SPACE,
 };
 
-typedef struct OS_Window OS_Window;
-struct OS_Window
-{
-	NSWindow *raw;
-};
-
-typedef struct OS_State OS_State;
-struct OS_State
-{
-	Arena *arena;
-	OS_Window win[OS_MAX_WIN];
-	s32 num;
-};
-
-pub OS_State *os_state;
 pub OS_EventList event_list;
 pub Arena *event_arena;
 
@@ -104,6 +89,23 @@ pub Arena *event_arena;
 	os_event->kind = OS_EventKind_CloseRequested;
 }
 @end
+
+typedef struct OS_Window OS_Window;
+struct OS_Window
+{
+	NSWindow *raw;
+	windowDelegate *del;
+};
+
+typedef struct OS_State OS_State;
+struct OS_State
+{
+	Arena *arena;
+	OS_Window win[OS_MAX_WIN];
+	s32 num;
+};
+
+pub OS_State *os_state;
 
 fn void os_innit()
 {
@@ -217,6 +219,7 @@ fn OS_Handle os_openWindow(char * title, f32 x, f32 y, f32 w, f32 h)
 	[win->raw makeKeyAndOrderFront: nil];
 	
 	windowDelegate *del = [[windowDelegate alloc]init];
+	win->del = del;
 	[win->raw setDelegate: del];
 	
 	OS_Handle out = {0};
