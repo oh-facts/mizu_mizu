@@ -22,7 +22,13 @@ int main(int argc, char *argv[])
 		f64 time_since_last = time_elapsed;
 		ArenaTemp temp = arenaTempBegin(frame);
 		
-		run = !os_keyTest(temp.arena);
+		//run = !os_keyTest(temp.arena);
+		OS_EventList list = os_pollEvents(temp.arena);
+		
+		if(os_event(&list, OS_Key_ESC, OS_EventKind_Pressed) || os_event(&list, OS_Key_NULL, OS_EventKind_CloseRequested))
+		{
+			run = 0;
+		}
 		
 		arenaTempEnd(&temp);
 		
