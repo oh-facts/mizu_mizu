@@ -7,8 +7,9 @@ int main(int argc, char *argv[])
 	OS_Handle win = os_openWindow("Wenk Wenk", 0, 0, 960, 540);
 	printf("window opened\n");
 	
-	//Arena *arena = arenaAlloc();
 	Arena *frame = arenaAlloc();
+	r_vulkanLoadFunctions();
+	r_vulkanInnit(win);
 	
 	u64 start = os_getPerfCounter();
 	u64 freq = os_getPerfFreq();

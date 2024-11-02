@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <X11/keysym.h>
 #include <time.h>
+#include <dlfcn.h>
 
 read_only OS_Key key_table[] = 
 {
@@ -202,4 +203,40 @@ fn OS_Handle os_openWindow(char * title, f32 x, f32 y, f32 w, f32 h)
 	OS_Handle out = {0};
 	out.u64[0] = win;
 	return out;
+}
+
+// TODO(mizu): We will eventually haver layers for other combos
+// xlib/Vulkan layer ======================================================
+
+#define VK_USE_PLATFORM_XLIB_KHR
+#include "vulkan/vulkan_xlib.h"
+PFN_vkCreateXlibSurfaceKHR vkCreateXlibSurfaceKHR;
+
+fn OS_Handle os_vulkan_loadLibrary()
+{
+	return os_loadLibrary("libvulkan.so.1");
+}
+
+fn void os_vulkan_loadSurfaceFunction(OS_Handle vkdll)
+{
+	vkCreateXlibSurfaceKHR = (PFN_vkCreateXlibSurfaceKHR)os_loadFunction(vkdll, "vkCreateXlibSurfaceKHR");
+}
+
+fn char *os_vulkan_surfaceExtentionName()
+{
+	return VK_KHR_XLIB_SURFACE_EXTENSION_NAME;
+}
+
+fn VkResult os_vulkan_createSurface(OS_Handle handle, VkInstance instance, VkSurfaceKHR *surface)
+{
+	VkXlibSurfaceCreateInfoKHR xlib_surf_info = {
+		.sType = VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR,
+		.pNext = 0,
+		.flags = 0,
+		.dpy = os_state->display,
+		.window = os_windowFromHandle(handle)->window
+	};
+	
+	VkResult res = vkCreateXlibSurfaceKHR(instance, &xlib_surf_info, 0, surface);
+	return res;
 }

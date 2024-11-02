@@ -73,3 +73,19 @@ fn u64 os_getPerfFreq()
 {
 	return 1000000000ull;
 }
+
+fn OS_Handle os_loadLibrary(char *name)
+{
+	OS_Handle out = {0};
+	void *dll = dlopen(name, RTLD_NOW);
+	printf("%s %p\r\n", name, dll);
+	out.u64[0] = (uint64_t)dll;
+	return out;
+}
+
+void *os_loadFunction(OS_Handle handle, char *name)
+{
+	void *dll = (void *)handle.u64[0];
+	void *out = dlsym(dll, name);
+	return out;
+}

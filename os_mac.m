@@ -1,8 +1,6 @@
-#undef function
 #include <Cocoa/Cocoa.h>
 #include <Foundation/Foundation.h>
 #include <Carbon/Carbon.h>
-#define function static
 
 read_only OS_Key key_table[] = 
 {
@@ -225,4 +223,38 @@ fn OS_Handle os_openWindow(char * title, f32 x, f32 y, f32 w, f32 h)
 	OS_Handle out = {0};
 	out.u64[0] = win;
 	return out;
+}
+
+#include <vulkan/vulkan_macos.h>
+
+PFN_vkCreateMacOSSurfaceMVK vkCreateMacOSSurfaceMVK;
+
+// NOTE(mizu): Untested!
+fn OS_Handle os_vulkan_loadLibrary()
+{
+	return os_loadLibrary("libvulkan.dylib");
+}
+
+fn void os_vulkan_loadSurfaceFunction(OS_Handle vkdll)
+{
+	vkCreateMacOSSurfaceMVK = (PFN_vkCreateMacOSSurfaceMVK)os_loadFunction(vkdll, "vkCreateMacOSSurfaceMVK");
+}
+
+fn char *os_vulkan_surfaceExtentionName()
+{
+	return VK_MVK_macos_surface;
+}
+
+fn VkResult os_vulkan_createSurface(OS_Handle handle, VkInstance instance, VkSurfaceKHR *surface)
+{
+	VkMacOSSurfaceCreateInfoMVK macos_surf_info = {
+		.sType = VK_STRUCTURE_TYPE_MACOS_SURFACE_CREATE_INFO_MVK,
+		.pNext = 0,
+		.flags = 0,
+		.dpy = os_state->display,
+		.window = os_windowFromHandle(handle)->window
+	};
+	
+	VkResult res = vkCreateXlibSurfaceKHR(r_vulkan_state->instance, &xlib_surf_info, NULL, &r_vulkan_state->surface);
+	return res;
 }

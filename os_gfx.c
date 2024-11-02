@@ -1,12 +1,5 @@
 // TODO(mizu): organize
 #define OS_MAX_WIN 10
-pub u64 total_cmt;
-pub u64 total_res;
-typedef struct OS_Handle OS_Handle;
-struct OS_Handle
-{
-	u64 u64[1];
-};
 
 typedef enum OS_Key OS_Key;
 enum OS_Key
@@ -75,10 +68,20 @@ struct OS_EventList
 	u64 count;
 };
 
-// implemented per OS ------------------
+// OS / video hooks ===================
 fn void os_innit();
 fn OS_EventList os_pollEvents(Arena *arena);
 fn OS_Handle os_openWindow(char * title, f32 x, f32 y, f32 w, f32 h);
+// =====================================
+
+#define VK_NO_PROTOTYPES
+#include "vulkan/vulkan.h"
+
+// OS / vulkan hooks ==================
+fn OS_Handle os_vulkan_loadLibrary();
+fn void os_vulkan_loadSurfaceFunction(OS_Handle vkdll);
+fn char *os_vulkan_surfaceExtentionName();
+fn VkResult os_vulkan_createSurface(OS_Handle handle, VkInstance instance, VkSurfaceKHR *surface);
 // =====================================
 
 fn OS_Event *os_pushEvent(Arena *arena, OS_EventList *list)

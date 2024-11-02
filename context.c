@@ -146,3 +146,5 @@ typedef int32_t b32;
 #else
 #error platform not supported
 #endif
+
+#include "render_vulkan.c"

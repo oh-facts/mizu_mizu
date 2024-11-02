@@ -1,16 +1,8 @@
 #define WIN32_LEAN_AND_MEAN
-#undef function
+
 #include <windows.h>
 #define GET_X_LPARAM(lp) ((int)(short)LOWORD(lp))
 #define GET_Y_LPARAM(lp) ((int)(short)HIWORD(lp))
-
-// NOTE(mizu):  doesn't work as expected. please help. meant to use discrete over
-// integreted gfx card
-
-_declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001; //NVIDIA
-__declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1; // AMD
-
-#define function static
 
 read_only OS_Key key_table[] = 
 {
@@ -160,6 +152,21 @@ fn u64 os_getPerfFreq()
 	LARGE_INTEGER frequency;
 	QueryPerformanceFrequency(&frequency);
 	return (u64)frequency.QuadPart;
+}
+
+fn OS_Handle os_loadLibrary(char *name)
+{
+	OS_Handle out = {0};
+	HMODULE dll = LoadLibraryA(name);
+	out.u64[0] = (u64)dll;
+	return out;
+}
+
+fn void *os_loadFunction(OS_Handle handle, char *name)
+{
+	HMODULE dll = (HMODULE)handle.u64[0];
+	void *out = (void*)GetProcAddress(dll, name);
+	return out;
 }
 
 typedef struct OS_Window OS_Window;
@@ -518,4 +525,40 @@ fn OS_Handle os_openWindow(char *title, f32 x, f32 y, f32 w, f32 h)
 	OS_Handle out = {0};
 	out.u64[0] = (u64)win;
 	return out;
+}
+
+// win32/Vulkan layer ======================================================
+
+#define VK_USE_PLATFORM_WIN32_KHR
+#include "vulkan/vulkan_win32.h"
+
+PFN_vkCreateWin32SurfaceKHR vkCreateWin32SurfaceKHR;
+
+fn OS_Handle os_vulkan_loadLibrary()
+{
+	return os_loadLibrary("vulkan-1.dll");
+}
+
+fn void os_vulkan_loadSurfaceFunction(OS_Handle vkdll)
+{
+	vkCreateWin32SurfaceKHR = (PFN_vkCreateWin32SurfaceKHR)os_loadFunction(vkdll, "vkCreateWin32SurfaceKHR");
+}
+
+fn char *os_vulkan_surfaceExtentionName()
+{
+	return VK_KHR_WIN32_SURFACE_EXTENSION_NAME;
+}
+
+fn VkResult os_vulkan_createSurface(OS_Handle handle, VkInstance instance, VkSurfaceKHR *surface)
+{
+	VkWin32SurfaceCreateInfoKHR win32_surf_info = {
+		.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR,
+		.pNext = 0,
+		.flags = 0,
+		.hinstance = GetModuleHandle(0),
+		.hwnd = os_windowFromHandle(handle)->hwnd
+	};
+	
+	VkResult res = vkCreateWin32SurfaceKHR(instance, &win32_surf_info, 0, surface);
+	return res;
 }
