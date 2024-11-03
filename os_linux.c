@@ -9,6 +9,7 @@
 #include <X11/keysym.h>
 #include <time.h>
 #include <dlfcn.h>
+#include <X11/XKBlib.h>
 
 read_only OS_Key key_table[] = 
 {
@@ -94,6 +95,7 @@ struct OS_Window
 {
 	Window window;
 	Atom del_window;
+    b32 keys[OS_Key_COUNT];
 };
 
 typedef struct OS_State OS_State;
@@ -117,7 +119,9 @@ fn void os_innit()
 	os_state->arena = arena;
 	os_state->display = XOpenDisplay(0);
 	os_state->screen = DefaultScreen(os_state->display);
-	XAutoRepeatOff(os_state->display);
+    
+    Bool supported;
+    XkbSetDetectableAutoRepeat(os_state->display, true, &supported);
 }
 
 fn OS_Window *os_windowFromHandle(OS_Handle handle)
@@ -147,62 +151,82 @@ fn OS_EventList os_pollEvents(Arena *arena)
 			} break;
 			
 			case KeyPress:
-			case KeyRelease:
+            case KeyRelease:
 			{
 				b32 isDown = event.type == KeyPress;
-				
 				KeySym sym = XLookupKeysym(&event.xkey, 0);
-				
-				OS_Key key = key_table[sym];
-				if(key)
-				{
-					OS_Event *os_event = os_pushEvent(event_arena, &event_list);
-					
-					os_event->key = key;
-					os_event->kind = isDown ? OS_EventKind_Pressed : OS_EventKind_Released;
-				}
-				
-			}break;
-			
-			case ButtonPress:
-			case ButtonRelease:
-			{
-				OS_Event *os_event = os_pushEvent(event_arena, &event_list);
-				
-				os_event->key = mouse_button_table[event.xbutton.button];
-				os_event->kind = ButtonRelease ? OS_EventKind_Released : OS_EventKind_Pressed;
-			}break;
-			
-			case MotionNotify:
-			{
-    OS_Event *os_event = os_pushEvent(event_arena, &event_list);
-    os_event->kind = OS_EventKind_MouseMove;
-    os_event->mpos.x = event.xmotion.x;
-    os_event->mpos.y = event.xmotion.y;
-			} break;
-			
-		}
-	}
-	
-	return event_list;
+                OS_Key key = key_table[sym];
+                
+                // NOTE(mizu): Have to do it like this so it works with key repeat and non repeat 
+                // x11 does this : 101010101010101010
+                // when holding down a key with repeat enabled
+                
+                // 111111111111111111111111111111111111110
+                // with repeat disabled.
+                // I want 1..............................0
+                // therefore we first disable auto repeat just for our client. Check os_innit
+                // Then we ignore subsequent key downs for keys that are already down
+                
+                if(key)
+                {
+                    if(isDown && os_state->win[0].keys[key] == 0)
+                    {
+                        OS_Event *os_event = os_pushEvent(event_arena, &event_list);
+                        
+                        os_event->key = key;
+                        os_event->kind = OS_EventKind_Pressed;
+                    }
+                    else if(!isDown)
+                    {
+                        OS_Event *os_event = os_pushEvent(event_arena, &event_list);
+                        
+                        os_event->key = key;
+                        os_event->kind = OS_EventKind_Released;
+                    }
+                    os_state->win[0].keys[key] = isDown;
+                }
+                
+            }break;
+            
+            case ButtonPress:
+            case ButtonRelease:
+            {
+                OS_Event *os_event = os_pushEvent(event_arena, &event_list);
+                
+                os_event->key = mouse_button_table[event.xbutton.button];
+                os_event->kind = ButtonRelease ? OS_EventKind_Released : OS_EventKind_Pressed;
+            }break;
+            
+            case MotionNotify:
+            {
+                OS_Event *os_event = os_pushEvent(event_arena, &event_list);
+                os_event->kind = OS_EventKind_MouseMove;
+                os_event->mpos.x = event.xmotion.x;
+                os_event->mpos.y = event.xmotion.y;
+            } break;
+            
+        }
+    }
+    
+    return event_list;
 }
 
 fn OS_Handle os_openWindow(char * title, f32 x, f32 y, f32 w, f32 h)
 {
-	OS_Window *win = os_state->win + os_state->num++;
-	
-	win->window = XCreateSimpleWindow(os_state->display, RootWindow(os_state->display, os_state->screen),
-																																			x, y, w, h, 1, BlackPixel(os_state->display, os_state->screen),
-																																			WhitePixel(os_state->display, os_state->screen));
-	
-	win->del_window = XInternAtom(os_state->display, "WM_DELETE_WINDOW", 0);
-	XSetWMProtocols(os_state->display, win->window, &win->del_window, 1);
-	XSelectInput(os_state->display, win->window, ExposureMask | KeyPressMask | KeyReleaseMask | ButtonReleaseMask | ButtonPressMask | PointerMotionMask | StructureNotifyMask);
-	XMapWindow(os_state->display, win->window);
-	
-	OS_Handle out = {0};
-	out.u64[0] = win;
-	return out;
+    OS_Window *win = os_state->win + os_state->num++;
+    
+    win->window = XCreateSimpleWindow(os_state->display, RootWindow(os_state->display, os_state->screen),
+                                      x, y, w, h, 1, BlackPixel(os_state->display, os_state->screen),
+                                      WhitePixel(os_state->display, os_state->screen));
+    
+    win->del_window = XInternAtom(os_state->display, "WM_DELETE_WINDOW", 0);
+    XSetWMProtocols(os_state->display, win->window, &win->del_window, 1);
+    XSelectInput(os_state->display, win->window, ExposureMask | KeyPressMask | KeyReleaseMask | ButtonReleaseMask | ButtonPressMask | PointerMotionMask | StructureNotifyMask);
+    XMapWindow(os_state->display, win->window);
+    
+    OS_Handle out = {0};
+    out.u64[0] = win;
+    return out;
 }
 
 // TODO(mizu): We will eventually haver layers for other combos
@@ -214,29 +238,29 @@ PFN_vkCreateXlibSurfaceKHR vkCreateXlibSurfaceKHR;
 
 fn OS_Handle os_vulkan_loadLibrary()
 {
-	return os_loadLibrary("libvulkan.so.1");
+    return os_loadLibrary("libvulkan.so.1");
 }
 
 fn void os_vulkan_loadSurfaceFunction(OS_Handle vkdll)
 {
-	vkCreateXlibSurfaceKHR = (PFN_vkCreateXlibSurfaceKHR)os_loadFunction(vkdll, "vkCreateXlibSurfaceKHR");
+    vkCreateXlibSurfaceKHR = (PFN_vkCreateXlibSurfaceKHR)os_loadFunction(vkdll, "vkCreateXlibSurfaceKHR");
 }
 
 fn char *os_vulkan_surfaceExtentionName()
 {
-	return VK_KHR_XLIB_SURFACE_EXTENSION_NAME;
+    return VK_KHR_XLIB_SURFACE_EXTENSION_NAME;
 }
 
 fn VkResult os_vulkan_createSurface(OS_Handle handle, VkInstance instance, VkSurfaceKHR *surface)
 {
-	VkXlibSurfaceCreateInfoKHR xlib_surf_info = {
-		.sType = VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR,
-		.pNext = 0,
-		.flags = 0,
-		.dpy = os_state->display,
-		.window = os_windowFromHandle(handle)->window
-	};
-	
-	VkResult res = vkCreateXlibSurfaceKHR(instance, &xlib_surf_info, 0, surface);
-	return res;
+    VkXlibSurfaceCreateInfoKHR xlib_surf_info = {
+        .sType = VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR,
+        .pNext = 0,
+        .flags = 0,
+        .dpy = os_state->display,
+        .window = os_windowFromHandle(handle)->window
+    };
+    
+    VkResult res = vkCreateXlibSurfaceKHR(instance, &xlib_surf_info, 0, surface);
+    return res;
 }

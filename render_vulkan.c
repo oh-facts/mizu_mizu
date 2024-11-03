@@ -72,10 +72,10 @@ fn void r_vulkanInnit(OS_Handle handle)
 		vkEnumerateInstanceVersion(&version);
 		
 		printf("\nVulkan Version: %d.%d.%d\n"
-									,VK_VERSION_MAJOR(version)
-									,VK_VERSION_MINOR(version)
-									,VK_VERSION_PATCH(version)
-									);
+               ,VK_VERSION_MAJOR(version)
+               ,VK_VERSION_MINOR(version)
+               ,VK_VERSION_PATCH(version)
+               );
 		
 		char *extentions[10] = {0};
 		u32 extention_num = 0;
@@ -270,14 +270,14 @@ fn void r_vulkanInnit(OS_Handle handle)
 		res = vkCreateDevice(r_vulkan_state->phys_device, &info, 0, &r_vulkan_state->device);
 		r_vulkan_check_res(res);
 	}
-	
-	
+    
 	// queues
 	{
-		r_vulkan_state->q_main_family = 0;
+		// TODO(mizu): Advisable to do it properly at some point. For now, I am just using 0. Zero is usually
+        // always the main one. if its not, then oop.
+        r_vulkan_state->q_main_family = 0;
 		vkGetDeviceQueue(r_vulkan_state->device, r_vulkan_state->q_main_family, 0, &r_vulkan_state->q_main);
 	}
-	
-	
 	//arena_temp_end(&scratch);
 }
+

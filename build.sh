@@ -34,4 +34,4 @@ else
     exit 1
 fi
 
-$compiler $platform_flags -Wall -Wextra -Wno-unused-function -Wno-format -Wno-int-conversion -Wno-sign-compare -Wno-unused-parameter -std=c99 -D_GNU_SOURCE $build_type -I. ./main.c -o $out -lm $gfx_lib
+$compiler $platform_flags -Wall -Wextra -Wno-unused-function -Wno-format -Wno-int-conversion -Wno-incompatible-pointer-types -Wno-sign-compare -Wno-unused-parameter -std=c99 -D_GNU_SOURCE $build_type -I. ./main.c -o $out -lm $gfx_lib
