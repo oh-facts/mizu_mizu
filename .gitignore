@@ -1,4 +1,4 @@
-// output
+# output
 .out/
 out/
 release/
@@ -7,27 +7,29 @@ build/
 builds/
 *.app/
 
-//editor
+
+# editor
 project.4coder
 .vs
 .vscode
 .cache
 *.swp
 
-// compiler artifacts
+# compiler artifacts
 *.pdb
 *.exp
 *.obj
 *.exe
 yk
 *.lib
-
-// debugger artifacts
+compile_commands.json
+# debugger artifacts
 *.rdi
 *.dSYM/
 
-// misc
+# misc
 temp/
 art.txt
 scratch.c
 *.zip
+Makefile
