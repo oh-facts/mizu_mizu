@@ -5,6 +5,7 @@ release/
 releases/
 build/
 builds/
+*.app/
 
 //editor
 project.4coder
@@ -23,7 +24,7 @@ yk
 
 // debugger artifacts
 *.rdi
-yk.dSYM/
+*.dSYM/
 
 // misc
 temp/

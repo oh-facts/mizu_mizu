@@ -1,6 +1,7 @@
 #include <Cocoa/Cocoa.h>
 #include <Foundation/Foundation.h>
 #include <Carbon/Carbon.h>
+#include <dlfcn.h>
 
 read_only OS_Key key_table[] = 
 {
@@ -319,7 +320,7 @@ fn VkResult os_vulkan_createSurface(OS_Handle handle, VkInstance instance, VkSur
 		.pView = os_state->win[0].view,
 	};
 	
-	VkResult res = 
-        vkCreateMacOSSurfaceMVK(instance, &macos_surf_info, 0, surface);
+  VkResult res = vkCreateMacOSSurfaceMVK(instance, &macos_surf_info, 0, surface);
+
 	return res;
 }

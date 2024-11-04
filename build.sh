@@ -26,7 +26,7 @@ if [ "$(uname)" == "Linux" ]; then
     out="yk"
 elif [ "$(uname)" == "Darwin" ]; then
     echo [Darwin]
-    out="contents/MacOS/yk.app"
+    out="Yk.app/Contents/MacOS/yk.app"
     platform_flags="-x objective-c"
     gfx_lib="-framework AppKit -framework Foundation"
 else
