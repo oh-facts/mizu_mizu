@@ -90,9 +90,9 @@ fn void r_vulkanInnit(OS_Handle handle)
 
 		char *extensions[] = {
 			VK_KHR_SURFACE_EXTENSION_NAME,
+			os_vulkan_surfaceExtensionName(),
 #if __APPLE__
 			VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME,
-			VK_MVK_MACOS_SURFACE_EXTENSION_NAME,
 #endif
 #if USE_VALIDATION_LAYERS
 			VK_EXT_DEBUG_UTILS_EXTENSION_NAME,

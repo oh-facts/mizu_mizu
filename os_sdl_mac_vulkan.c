@@ -16,9 +16,9 @@ fn void os_vulkan_loadSurfaceFunction(OS_Handle vkdll)
 	vkCreateMacOSSurfaceMVK = (PFN_vkCreateMacOSSurfaceMVK)os_loadFunction(vkdll, "vkCreateMacOSSurfaceMVK");
 }
 
-fn char *os_vulkan_surfaceExtentionName()
+fn char *os_vulkan_surfaceExtensionName()
 {
-	return VK_MVK_macos_surface;
+	return VK_MVK_MACOS_SURFACE_EXTENSION_NAME;
 }
 
 fn VkResult os_vulkan_createSurface(OS_Handle handle, VkInstance instance, VkSurfaceKHR *surface)
