@@ -1,6 +1,10 @@
 #define USE_VALIDATION_LAYERS 1
 #define R_VULKAN_CHECK_RES 1
 
+#if __APPLE__
+#include <vulkan/vulkan_beta.h>
+#endif
+
 typedef struct R_VULKAN_State R_VULKAN_State;
 struct R_VULKAN_State
 {
@@ -88,8 +92,7 @@ fn void r_vulkanInnit(OS_Handle handle)
 			VK_KHR_SURFACE_EXTENSION_NAME,
 #if __APPLE__
 			VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME,
-#else
-			os_vulkan_surfaceExtentionName(),
+			VK_MVK_MACOS_SURFACE_EXTENSION_NAME,
 #endif
 #if USE_VALIDATION_LAYERS
 			VK_EXT_DEBUG_UTILS_EXTENSION_NAME,
@@ -257,8 +260,13 @@ fn void r_vulkanInnit(OS_Handle handle)
 	
 	// logical device
 	{
-		const char* device_extention_names[2] = { VK_KHR_SWAPCHAIN_EXTENSION_NAME, VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME };
-		
+		const char* device_extension_names[] = {
+			VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+			VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME,
+#if __APPLE__
+			VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME,
+#endif
+		};
 		f32 q_priorities[1] = {1.f};
 		
 		VkDeviceQueueCreateInfo q_info = 
@@ -275,8 +283,8 @@ fn void r_vulkanInnit(OS_Handle handle)
 			.pQueueCreateInfos = &q_info,
 			.enabledLayerCount = 0,
 			.ppEnabledLayerNames = 0,
-			.enabledExtensionCount = 2,
-			.ppEnabledExtensionNames = device_extention_names,
+			.enabledExtensionCount = ARRAY_LEN(device_extension_names),
+			.ppEnabledExtensionNames = device_extension_names,
 			.pEnabledFeatures = 0
 		};
 		
