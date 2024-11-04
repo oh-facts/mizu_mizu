@@ -259,7 +259,6 @@ fn VkResult os_vulkan_createSurface(OS_Handle handle, VkInstance instance, VkSur
 		.pView = os_state->win[0].view,
 	};
 	
-	VkResult res = 
-        vkCreateMacOSSurfaceMVK(r_vulkan_state->instance, &macos_surf_info, 0, &r_vulkan_state->surface);
+	VkResult res = vkCreateMacOSSurfaceMVK(instance, &macos_surf_info, 0, surface);
 	return res;
 }
