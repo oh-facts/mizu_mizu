@@ -36,6 +36,6 @@ fn VkResult os_vulkan_createSurface(OS_Handle handle, VkInstance instance, VkSur
         .pView = nsView
     };
     
-    VkResult res = vkCreateMacOSSurfaceMVK(instance, &macos_surf_info, NULL, surface);
+    VkResult res = SDL_Vulkan_CreateSurface(instance, &macos_surf_info, surface);
     return res;
 }
