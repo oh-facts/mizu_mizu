@@ -1,6 +1,7 @@
 #include <Cocoa/Cocoa.h>
 #include <Foundation/Foundation.h>
 #include <Carbon/Carbon.h>
+#include <dlfcn.h>
 
 read_only OS_Key key_table[] = 
 {
