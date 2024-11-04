@@ -8,7 +8,7 @@ enum OS_Key
 	
 	OS_Key_F1, OS_Key_F2, OS_Key_F3, OS_Key_F4, OS_Key_F5, 
 	OS_Key_F6, OS_Key_F7, OS_Key_F8, OS_Key_F9, OS_Key_F10,
- OS_Key_F11, OS_Key_F12,
+    OS_Key_F11, OS_Key_F12,
 	
 	OS_Key_A, OS_Key_B, OS_Key_C, OS_Key_D, OS_Key_E,
 	OS_Key_F, OS_Key_G, OS_Key_H, OS_Key_I, OS_Key_J,
@@ -203,7 +203,7 @@ read_only char *key_names[] =
 	[OS_Key_RALT] = "OS_Key_RALT",
 	
 	[OS_Key_LMB] = "lmb",
- [OS_Key_RMB] = "rmb",
+    [OS_Key_RMB] = "rmb",
 	[OS_Key_MMB] = "mmb",
 	
 	[OS_Key_LEFT] = "OS_Key_LEFT",
@@ -223,31 +223,36 @@ read_only char *event_names[] =
 	[OS_EventKind_Pressed] = "pressed",
 	[OS_EventKind_Released] = "released",
 	[OS_EventKind_CloseRequested] = "close requested",
+    [OS_EventKind_MouseMove] = "mouse moved",
 };
 
-// returns true if close is requested
-fn b32 os_keyTest(Arena *arena)
+fn void os_eventListPrint(OS_EventList *list)
 {
-	OS_EventList list = os_pollEvents(arena);
-	
-	for(OS_Key key = OS_Key_F1; key < OS_Key_COUNT; key++)
-	{
-		for(OS_EventKind kind = OS_EventKind_Pressed; kind <= OS_EventKind_Released; kind++)
-		{
-			OS_Event *event = os_event(&list, key, kind);
-			if(event)
-			{
-				printf("%s ", key_names[key]);
-				printf("%s\r\n", event_names[kind]);
-			}
-		}
-	}
-	
-	OS_Event *event = os_event(&list, OS_Key_NULL, OS_EventKind_MouseMove);
-	if(event)
-	{
-		printf("%.f %.f\n", event->mpos.x, event->mpos.y);
-	}
-	
-	return !!os_event(&list, OS_Key_NULL, OS_EventKind_CloseRequested);
+    for(OS_Event *event = list->first; event; event = event->next)
+    {
+        printf("%s ", event_names[event->kind]);
+        
+        switch(event->kind)
+        {
+            case OS_EventKind_Pressed:
+            case OS_EventKind_Released:
+            {
+                printf("[%s]", key_names[event->key]);
+            }break;
+            
+            case OS_EventKind_MouseMove:
+            {
+                printf("[%.f %.f]", event->mpos.x, event->mpos.y);
+            }break;
+            
+            case OS_EventKind_CloseRequested:
+            case OS_EventKind_NULL:
+            default:
+            {
+                
+            }break;
+        }
+        
+        printf("\r\n");
+    }
 }

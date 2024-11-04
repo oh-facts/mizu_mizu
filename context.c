@@ -137,12 +137,15 @@ typedef int32_t b32;
 
 #if defined(OS_WIN32)
 #include "os_win32.c"
+#include "os_win32_vulkan.c"
 #elif defined(OS_LINUX)
-#include "os_linux.c"
+#include "os_sdl.c"
 #include "os_unixLike.c"
+#include "os_sdl_x11_vulkan.c"
 #elif defined(OS_APPLE)
 #include "os_mac.m"
 #include "os_unixLike.c"
+#include "os_sdl_mac_vulkan.c"
 #else
 #error platform not supported
 #endif

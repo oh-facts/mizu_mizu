@@ -17,21 +17,6 @@ platform_flags=""
 
 echo "[$compiler]"
 echo "[$build_type]"
+echo "OS: $(uname)"
 
-gfx_lib=""
-
-if [ "$(uname)" == "Linux" ]; then
-    echo "[Linux]"
-    gfx_lib="-lX11"
-    out="yk"
-elif [ "$(uname)" == "Darwin" ]; then
-    echo [Darwin]
-    out="Yk.app/Contents/MacOS/yk.app"
-    platform_flags="-x objective-c"
-    gfx_lib="-framework AppKit -framework Foundation"
-else
-    echo "Unsupported OS: $(uname)"
-    exit 1
-fi
-
-$compiler $platform_flags -Wall -Wextra -Wno-unused-function -Wno-format -Wno-int-conversion -Wno-incompatible-pointer-types -Wno-sign-compare -Wno-unused-parameter -std=c99 -D_GNU_SOURCE $build_type -I. ./main.c -o $out -lm $gfx_lib
+$compiler -Wall -Wextra -Wno-unused-function -Wno-format -Wno-int-conversion -Wno-incompatible-pointer-types -Wno-sign-compare -Wno-unused-parameter -std=c99 -D_GNU_SOURCE $build_type -I. ./main.c -o ./yk -lm  -lSDL2

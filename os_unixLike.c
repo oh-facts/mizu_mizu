@@ -1,3 +1,9 @@
+#include <sys/mman.h>
+#include <unistd.h>
+#include <errno.h>
+#include <time.h>
+#include <dlfcn.h>
+
 fn void *os_reserve(u64 size)
 {
 	void *out = mmap(0, size, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
