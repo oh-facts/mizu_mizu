@@ -92,7 +92,8 @@ typedef struct OS_Window OS_Window;
 struct OS_Window
 {
 	NSWindow *raw;
-	windowDelegate *del;
+	NSView *view;
+    windowDelegate *del;
 };
 
 typedef struct OS_State OS_State;
@@ -120,9 +121,9 @@ fn OS_EventList os_pollEvents(Arena *arena)
 	NSEvent *event;
 	do {
 		event = [NSApp nextEventMatchingMask: NSEventMaskAny
-											untilDate: nil
-											inMode: NSDefaultRunLoopMode
-											dequeue: YES];
+                 untilDate: nil
+                 inMode: NSDefaultRunLoopMode
+                 dequeue: YES];
 		
 		switch([event type])
 		{
@@ -207,15 +208,18 @@ fn OS_Handle os_openWindow(char * title, f32 x, f32 y, f32 w, f32 h)
 	
 	NSRect win_rect = NSMakeRect(x, y, w, h);
 	win->raw = [[NSWindow alloc] initWithContentRect: win_rect 
-													styleMask: NSWindowStyleMaskTitled | NSWindowStyleMaskClosable |
-													NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable
-													
-													backing: NSBackingStoreBuffered
-													defer: NO];
+                styleMask: NSWindowStyleMaskTitled | NSWindowStyleMaskClosable |
+                NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable
+                
+                backing: NSBackingStoreBuffered
+                defer: NO];
 	
 	[win->raw setTitle: [NSString stringWithUTF8String:title]];
 	[win->raw makeKeyAndOrderFront: nil];
 	
+    win->view = [[NSView alloc] initWithFrame: win_rect];
+    [win->raw setContentView: win->view];
+    
 	windowDelegate *del = [[windowDelegate alloc]init];
 	win->del = del;
 	[win->raw setDelegate: del];
@@ -251,10 +255,10 @@ fn VkResult os_vulkan_createSurface(OS_Handle handle, VkInstance instance, VkSur
 		.sType = VK_STRUCTURE_TYPE_MACOS_SURFACE_CREATE_INFO_MVK,
 		.pNext = 0,
 		.flags = 0,
-		.dpy = os_state->display,
-		.window = os_windowFromHandle(handle)->window
+		.pView = win->view,
 	};
 	
-	VkResult res = vkCreateXlibSurfaceKHR(r_vulkan_state->instance, &xlib_surf_info, NULL, &r_vulkan_state->surface);
+	VkResult res = 
+        vkCreateMacOSSurfaceMVK(r_vulkan_state->instance, &macos_surf_info, 0, &r_vulkan_state->surface);
 	return res;
 }
