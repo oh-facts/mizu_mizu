@@ -77,23 +77,15 @@ read_only OS_Key key_table[] =
 pub OS_EventList event_list;
 pub Arena *event_arena;
 
-@interface windowDelegate: NSObject <NSWindowDelegate>;
-@end
-
-@implementation windowDelegate
-
-- (void)windowWillClose:(NSNotification*)notification {
-	OS_Event *os_event = os_pushEvent(event_arena, &event_list);
-	os_event->kind = OS_EventKind_CloseRequested;
-}
-@end
+@class AppDelegate;
+@class WindowDelegate;
 
 typedef struct OS_Window OS_Window;
 struct OS_Window
 {
 	NSWindow *raw;
 	NSView *view;
-    windowDelegate *del;
+    WindowDelegate *del;
 };
 
 typedef struct OS_State OS_State;
@@ -102,15 +94,55 @@ struct OS_State
 	Arena *arena;
 	OS_Window win[OS_MAX_WIN];
 	s32 num;
+    AppDelegate *appDelegate;
 };
 
 pub OS_State *os_state;
+
+@interface AppDelegate: NSObject <NSApplicationDelegate> {
+}
+@end
+
+@implementation AppDelegate
+
+- (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender {
+    return NSTerminateCancel;
+}
+
+@end
+
+@interface WindowDelegate : NSObject <NSWindowDelegate> {
+}
+@end
+
+@implementation WindowDelegate
+
+- (BOOL)windowShouldClose:(id)sender {
+    OS_Event *os_event = os_pushEvent(event_arena, &event_list);
+	os_event->kind = OS_EventKind_CloseRequested;
+    return YES;
+}
+
+-(void)windowWillClose:(NSNotification *)notification {
+    OS_Event *os_event = os_pushEvent(event_arena, &event_list);
+	os_event->kind = OS_EventKind_CloseRequested;
+    [NSApp terminate:self];
+}
+
+@end
 
 fn void os_innit()
 {
 	Arena *arena = arenaAlloc();
 	os_state = push_struct(arena, OS_State);
 	os_state->arena = arena;
+    
+    [NSApplication sharedApplication];
+    
+    os_state->appDelegate = [[AppDelegate alloc] init];
+    [NSApp setDelegate: os_state->appDelegate];
+    
+    [NSApp finishLaunching];
 }
 
 fn OS_EventList os_pollEvents(Arena *arena)
@@ -202,31 +234,60 @@ fn OS_EventList os_pollEvents(Arena *arena)
 	return event_list;
 }
 
-fn OS_Handle os_openWindow(char * title, f32 x, f32 y, f32 w, f32 h)
+fn OS_Handle os_openWindow(char *title, f32 x, f32 y, f32 w, f32 h)
 {
-	OS_Window *win = os_state->win + os_state->num++;
-	
-	NSRect win_rect = NSMakeRect(x, y, w, h);
-	win->raw = [[NSWindow alloc] initWithContentRect: win_rect 
-                styleMask: NSWindowStyleMaskTitled | NSWindowStyleMaskClosable |
-                NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable
-                
-                backing: NSBackingStoreBuffered
-                defer: NO];
-	
-	[win->raw setTitle: [NSString stringWithUTF8String:title]];
-	[win->raw makeKeyAndOrderFront: nil];
-	
-    win->view = [[NSView alloc] initWithFrame: win_rect];
-    [win->raw setContentView: win->view];
+    OS_Window *win = os_state->win + os_state->num++;
     
-	windowDelegate *del = [[windowDelegate alloc]init];
-	win->del = del;
-	[win->raw setDelegate: del];
-	
-	OS_Handle out = {0};
-	out.u64[0] = win;
-	return out;
+    NSUInteger windowStyle = NSTitledWindowMask  | NSClosableWindowMask | NSResizableWindowMask | NSMiniaturizableWindowMask;
+    
+    NSRect screenRect = [[NSScreen mainScreen] frame];
+    NSRect viewRect = NSMakeRect(x, y, w, h);
+    NSRect windowRect = NSMakeRect(NSMidX(screenRect) - NSMidX(viewRect),
+                                   NSMidY(screenRect) - NSMidY(viewRect),
+                                   viewRect.size.width,
+                                   viewRect.size.height);
+    
+    win->raw = [[NSWindow alloc] initWithContentRect:windowRect
+                styleMask:windowStyle
+                backing:NSBackingStoreBuffered
+                defer:NO];
+    
+    [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
+    
+    NSMenu *menubar = [[NSMenu new] autorelease];
+    NSMenuItem *appMenuItem = [[NSMenuItem new] autorelease];
+    [menubar addItem:appMenuItem];
+    [NSApp setMainMenu:menubar];
+    
+    NSMenu *appMenu = [[NSMenu new] autorelease];
+    
+    NSString *appName = [NSString stringWithUTF8String:title];
+    
+    NSString *quitTitle = [NSString stringWithFormat:@"Quit %@", appName];
+    NSMenuItem *quitMenuItem = [[[NSMenuItem alloc] initWithTitle:quitTitle
+                                 action:@selector(terminate:) keyEquivalent:@"q"] autorelease];
+    [appMenu addItem:quitMenuItem];
+    [appMenuItem setSubmenu:appMenu];
+    
+    NSWindowController *windowController = [[NSWindowController alloc] initWithWindow:win->raw];
+    [windowController autorelease];
+    
+    win->view = [[NSView alloc] initWithFrame:viewRect];
+    [win->raw setContentView:win->view];
+    
+    win->del = [[WindowDelegate alloc] init];
+    [win->raw setDelegate:win->del];
+    
+    [win->raw setAcceptsMouseMovedEvents:YES];
+    
+    [win->raw setTitle:appName];
+    
+    [win->raw setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
+    [win->raw makeKeyAndOrderFront:nil];
+    
+    OS_Handle out = {0};
+    out.u64[0] = win;
+    return out;
 }
 
 #include <vulkan/vulkan_macos.h>
@@ -255,10 +316,10 @@ fn VkResult os_vulkan_createSurface(OS_Handle handle, VkInstance instance, VkSur
 		.sType = VK_STRUCTURE_TYPE_MACOS_SURFACE_CREATE_INFO_MVK,
 		.pNext = 0,
 		.flags = 0,
-		.pView = win->view,
+		.pView = os_state->win[0].view,
 	};
 	
 	VkResult res = 
-        vkCreateMacOSSurfaceMVK(r_vulkan_state->instance, &macos_surf_info, 0, &r_vulkan_state->surface);
+        vkCreateMacOSSurfaceMVK(instance, &macos_surf_info, 0, surface);
 	return res;
 }
