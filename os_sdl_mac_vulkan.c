@@ -27,8 +27,8 @@ fn VkResult os_vulkan_createSurface(OS_Handle handle, VkInstance instance, VkSur
     SDL_VERSION(&wmInfo.version);
     SDL_GetWindowWMInfo(os_state->win[0].raw, &wmInfo);
     
-    NSView *nsView = wmInfo.info.cocoa.view;
-    
+    NSView *nsView = [wmInfo.info.cocoa.window contentView];
+
     VkMacOSSurfaceCreateInfoMVK macos_surf_info = {
         .sType = VK_STRUCTURE_TYPE_MACOS_SURFACE_CREATE_INFO_MVK,
         .pNext = 0,
