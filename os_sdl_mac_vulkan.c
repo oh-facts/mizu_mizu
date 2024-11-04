@@ -8,7 +8,7 @@ PFN_vkCreateMacOSSurfaceMVK vkCreateMacOSSurfaceMVK;
 // NOTE(mizu): Untested!
 fn OS_Handle os_vulkan_loadLibrary()
 {
-	return os_loadLibrary("libvulkan.dylib");
+	return os_loadLibrary("/usr/local/lib/libvulkan.1.dylib");
 }
 
 fn void os_vulkan_loadSurfaceFunction(OS_Handle vkdll)
