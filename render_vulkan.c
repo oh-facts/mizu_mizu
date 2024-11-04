@@ -1,4 +1,4 @@
-#define USE_VALIDATION_LAYERS 0
+#define USE_VALIDATION_LAYERS 1
 #define R_VULKAN_CHECK_RES 1
 
 typedef struct R_VULKAN_State R_VULKAN_State;
@@ -76,27 +76,36 @@ fn void r_vulkanInnit(OS_Handle handle)
                ,VK_VERSION_MINOR(version)
                ,VK_VERSION_PATCH(version)
                );
-		
-		char *extentions[10] = {0};
-		u32 extention_num = 0;
-		
-		char *validation_layers[1] = {0};
-		u32 validation_layers_num = 0;
-		
-		//extentions and validation layers
-		extentions[extention_num++] = VK_KHR_SURFACE_EXTENSION_NAME;
-		extentions[extention_num++] = os_vulkan_surfaceExtentionName();
-		
+
+		// extensions and validation layers
 #if USE_VALIDATION_LAYERS
-		
-		validation_layers[validation_layers_num++] = (char*){
+		char *validation_layers[] = {
 			"VK_LAYER_KHRONOS_validation"
-		};
-		
-		extentions[extention_num++] = VK_EXT_DEBUG_UTILS_EXTENSION_NAME;
-		
+		};		
 #endif
-		
+
+		char *extensions[] = {
+			VK_KHR_SURFACE_EXTENSION_NAME,
+#if __APPLE__
+			VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME,
+#else
+			os_vulkan_surfaceExtentionName(),
+#endif
+#if USE_VALIDATION_LAYERS
+			VK_EXT_DEBUG_UTILS_EXTENSION_NAME,
+#endif
+		};
+
+		const u32 extension_num = ARRAY_LEN(extensions);
+		const u32 validation_layers_num = ARRAY_LEN(validation_layers);
+
+		printf("=========\nExtension Count %d\n", extension_num);
+		for(u32 i = 0; i < extension_num; i++)
+		{
+			printf("%s\n", extensions[i]);
+		}
+		printf("=========\n");
+
 		VkApplicationInfo app_info = {
 			.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
 			.pNext = 0,
@@ -110,12 +119,16 @@ fn void r_vulkanInnit(OS_Handle handle)
 		VkInstanceCreateInfo inst_info = {
 			.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
 			.pNext = 0,
-			.flags = 0, // reserved for future use
+#ifdef __APPLE__
+			.flags = VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR,
+#else
+			.flags = 0,
+#endif
 			.pApplicationInfo = &app_info,
 			.enabledLayerCount = validation_layers_num,
 			.ppEnabledLayerNames = validation_layers,
-			.enabledExtensionCount = extention_num,
-			.ppEnabledExtensionNames = extentions
+			.enabledExtensionCount = extension_num,
+			.ppEnabledExtensionNames = extensions
 		};
 		
 		res = vkCreateInstance(&inst_info, 0, &r_vulkan_state->instance);
