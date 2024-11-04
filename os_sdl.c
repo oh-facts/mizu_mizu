@@ -108,7 +108,6 @@ fn void os_innit()
     SDL_Init(SDL_INIT_VIDEO);
 }
 
-
 fn OS_Window *os_windowFromHandle(OS_Handle handle)
 {
 	return (OS_Window*)handle.u64[0];

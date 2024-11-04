@@ -1,3 +1,4 @@
+#include <Cocoa/Cocoa.h>
 #include <vulkan/vulkan_macos.h>
 #include <SDL2/SDL_syswm.h>
 #include <SDL2/SDL_vulkan.h>

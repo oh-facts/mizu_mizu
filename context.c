@@ -143,7 +143,7 @@ typedef int32_t b32;
 #include "os_unixLike.c"
 #include "os_sdl_x11_vulkan.c"
 #elif defined(OS_APPLE)
-#include "os_mac.m"
+#include "os_sdl.c"
 #include "os_unixLike.c"
 #include "os_sdl_mac_vulkan.c"
 #else
